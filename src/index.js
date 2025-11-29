@@ -1,3 +1,12 @@
+import "./styles.css";
+import haertIcon from '/src/assets/icons/heart.png';
+import collisionMp3 from './assets/audio/collision.mp3'
+import mExplosionMp3 from './assets/audio/medium-explosion.mp3'
+import explosionMp3 from './assets/audio/explosion.mp3'
+import gameMusicLoop from './assets/audio/game-music-loop.mp3'
+import startSoundMp3 from './assets/audio/game-start.mp3'
+import pauseSoundMp3 from './assets/audio/game-pause.mp3'
+import gameOverSoundMp3 from './assets/audio/game-over.mp3'
 const hexColors = [
     "#FF5733",  // Red-Orange
     "#33FF57",  // Green
@@ -13,7 +22,7 @@ const hexColors = [
 const goldColor = 'rgb(255, 215, 0)';
 var lastDeduction = 0;
 const speed = 7000;
-const interval = 500;
+const interval = 1000;
 var gameIntervalPointer = undefined;
 var CONTAINER = undefined;
 var LIFECONTAINER = undefined;
@@ -23,14 +32,19 @@ var CONTINUEBTN = undefined;
 var PAUSEBTN = undefined;
 var SCORE = undefined;
 var gameState = 'notPlaying'
-const audio = new Audio('./assets/audio/collision.mp3');
-const mediumExplosionAudio = new Audio('./assets/audio/medium-explosion.mp3');
-const explosionAudio = new Audio('./assets/audio/explosion.mp3');
+const audio = new Audio(collisionMp3);
+const mediumExplosionAudio = new Audio(mExplosionMp3);
+const explosionAudio = new Audio(explosionMp3);
+const musicGame = new Audio(gameMusicLoop);
+const startSound = new Audio(startSoundMp3);
+const pauseSound = new Audio(pauseSoundMp3);
+const gameOverSound = new Audio(gameOverSoundMp3);
+
+musicGame.loop = true;
 var PARTICLESANIMATIONS = {};
 let counter = 0;
 var specialParticle = false;
 var verySpacialParticle = false;
-var PARTICLESEL = []
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -50,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function generateLifeHeart() {
     for (let index = 0; index < 10; index++) {
         const haert = createElement('img', `heart-${index+1}`, 'heart')
-        haert.src = './src/assets/icons/heart.png'
+        haert.src = haertIcon
         LIFECONTAINER.append(haert)
     }
 }
@@ -115,6 +129,9 @@ function showPauseBtnAndScore() {
 }
 
 function startGame() {
+    startSound.play()
+    
+    setTimeout(() => playMusicGame(), 1000)
     gameState = 'playing'
     document.getElementById("life-container").style.display = 'flex';
     startBtnDisappear(() => {
@@ -227,6 +244,15 @@ function stopExplosionAudio() {
     explosionAudio.pause();
     explosionAudio.currentTime = 0; 
 }
+function stopMusicGame() {
+    musicGame.pause();
+    musicGame.currentTime = 0; 
+}
+function playMusicGame() {
+    musicGame.play().catch(() => {
+        console.warn('Background music could not start until the user interacts with the page.');
+    });
+}
 function breakParticle(e) {
     if(gameState == 'pause') return;
 
@@ -310,6 +336,8 @@ function breakParticle(e) {
 
 function pauseGame() {
     gameState = 'pause'
+    pauseSound.play()
+    musicGame.pause();
     clearInterval(gameIntervalPointer)
     gameIntervalPointer = undefined;
     const anim = PAUSEBTN.animate(
@@ -372,6 +400,8 @@ function showStopAndContinueBtn() {
 
 function continueGame() {
     gameState = 'playing'
+    startSound.play()
+    setTimeout(() => playMusicGame(), 1000)
     hideElementWithAnimation(STOPBTN,() => {
         STOPBTN.style.display = 'none'
     })
@@ -395,6 +425,8 @@ function continueGame() {
 
 function stopGame() {
     gameState = 'noPlaying'
+    gameOverSound.play()
+    stopMusicGame()
 
     const stpBtnAnimation = STOPBTN.animate(
         [

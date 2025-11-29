@@ -1,0 +1,12 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Environment files
+.env
+
+# Editor artifacts
+.vscode
+.DS_Store
